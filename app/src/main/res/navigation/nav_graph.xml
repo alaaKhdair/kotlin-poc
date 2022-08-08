@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/item_List">
+
+    <fragment
+        android:id="@+id/item_List"
+        android:name="com.example.kotlintask3.ui.ItemListFragment"
+        >
+        <action
+            android:id="@+id/action_item_List_to_selected_item"
+            app:destination="@id/selected_item" />
+    </fragment>
+    <fragment
+        android:id="@+id/selected_item"
+        android:name="com.example.kotlintask3.ui.SelectedItemFragment">
+    </fragment>
+</navigation>

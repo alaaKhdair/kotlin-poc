@@ -10,7 +10,5 @@ class ItemRepository(
 
     suspend fun getData()=db.itemDao().getItems()
 
-    suspend fun getItemFromDb(id:String)=db.itemDao().getSelectedItem(id)
-
     suspend fun updateName(id:String,name:String)=db.itemDao().updateName(id,name)
 }

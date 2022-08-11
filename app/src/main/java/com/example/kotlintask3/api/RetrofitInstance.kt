@@ -4,8 +4,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitInstance {
-
-
     companion object {
         private const val BASE_URL = "https://62b19d03c7e53744afbd0b3b.mockapi.io/api/v1/"
 

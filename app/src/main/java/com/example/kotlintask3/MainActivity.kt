@@ -37,5 +37,4 @@ class MainActivity : AppCompatActivity() {
         onBackPressed()
         return true
     }
-
 }

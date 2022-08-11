@@ -11,20 +11,21 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
-import com.bumptech.glide.Glide
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
 import com.example.kotlintask3.MainActivity
 import com.example.kotlintask3.R
+import com.example.kotlintask3.adapter.SelectedItemAdapter
 import com.example.kotlintask3.api.Item
 import com.example.kotlintask3.databinding.FragmentSelectedItemBinding
 import com.example.kotlintask3.model.ItemViewModel
@@ -33,13 +34,13 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 
-class SelectedItemFragment : Fragment(R.layout.fragment_selected_item) {
+class SelectedItemFragment : Fragment(R.layout.fragment_selected_item), UiFunction {
     private lateinit var viewModel: ItemViewModel
     private lateinit var binding: FragmentSelectedItemBinding
+    private val channelId: String = "channel_id_example_011"
     private lateinit var downloadService: DownloadManager
-    private val channelId = "channel_id_example_011"
-    private val notificationId = 101
     var downloadId: Long = 0
+    private val notificationId: Int = 101
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
@@ -49,19 +50,29 @@ class SelectedItemFragment : Fragment(R.layout.fragment_selected_item) {
         }
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        viewModel = (activity as MainActivity).viewModel
-        requireContext().registerReceiver(
-            broadcastReceiver,
-            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        )
-        binding = FragmentSelectedItemBinding.inflate(layoutInflater)
-        createNotificationChannel()
+        if (!this::binding.isInitialized) {
+            viewModel = (activity as MainActivity).viewModel
+            requireContext().registerReceiver(
+                broadcastReceiver,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+            )
+            binding = FragmentSelectedItemBinding.inflate(layoutInflater)
+            postData()
+            val snapHelper = LinearSnapHelper()
+            snapHelper.attachToRecyclerView(binding.selectedItemRecyclerView)
+            createNotificationChannel()
+        }
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.nameUpdated.value == true)
+            postData()
     }
 
     override fun onDestroyView() {
@@ -69,96 +80,37 @@ class SelectedItemFragment : Fragment(R.layout.fragment_selected_item) {
         super.onDestroyView()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        postData()
-    }
-
     private fun postData() {
-        val id: String = arguments?.getString("id") ?: ""
+        val itemPosition: Int = arguments?.getInt("itemPosition", 0) ?: 0
+        viewModel.position = itemPosition
+        val linearLayoutManager = LinearLayoutManager(this.context)
         if (viewModel.hasInternetConnection()) {
-            viewModel.getSelectedItem(id)
-            viewModel.getItemLiveDataObserver().observe(this.viewLifecycleOwner) {
-                (activity as AppCompatActivity).supportActionBar?.title = it.itemName
-                Glide.with(binding.selectedItemImage).load(it.itemImage)
-                    .into(binding.selectedItemImage)
-                binding.selectedItemTitle.setText(it.itemName, TextView.BufferType.EDITABLE)
-                binding.selectedItemDescription.text = it.ItemDescription
-                progressBar?.visibility = View.GONE
-                val item: Item = it
-                val id1: String = it.id
-                val url: String = it.itemImage
-                val imageName: String = it.itemName
-                binding.downloadButton.setOnClickListener {
-                    downloadManager(url, imageName)
-                }
-                binding.updateNameButton.setOnClickListener {
-                    updateName(id1, item)
-                }
+            viewModel.data.observe(this.viewLifecycleOwner) {
+                binding.selectedItemRecyclerView.layoutManager = LinearLayoutManager(
+                    this.context, LinearLayoutManager.HORIZONTAL, false
+                )
+                binding.selectedItemRecyclerView.adapter =
+                    SelectedItemAdapter(it, this@SelectedItemFragment)
+                viewModel.insertData(it)
+                binding.selectedItemRecyclerView.scrollToPosition(itemPosition)
+                progressBar2.visibility = View.GONE
             }
+            binding.selectedItemRecyclerView.scrollToPosition(itemPosition)
         } else {
             viewModel.viewModelScope.launch {
-                viewModel.getItemWhenNoConnection(id)
+                viewModel.getDataFRomDb()
             }
-            viewModel.getItemLiveDataObserver().observe(this.viewLifecycleOwner) {
-                (activity as AppCompatActivity).supportActionBar?.title = it.itemName
-                Glide.with(binding.selectedItemImage).load(R.drawable.no_image)
-                    .into(binding.selectedItemImage)
-                binding.selectedItemTitle.setText(it.itemName, TextView.BufferType.EDITABLE)
-                val name =it.itemName
-                binding.selectedItemDescription.text = it.ItemDescription
-                binding.updateNameButton.setOnClickListener {
-                    Toast.makeText(this.context,"Please Check Your Internet Connection To Update Name",Toast.LENGTH_LONG).show()
-                    binding.selectedItemTitle.setText(name, TextView.BufferType.EDITABLE)
-                }
-                progressBar?.visibility = View.GONE
-            }
-        }
-    }
-
-    private fun downloadManager(url: String, imageName: String) {
-        val filePath: String =
-            Environment.getExternalStorageDirectory().absolutePath + File.separator + "KTask3"
-        val folder = File(filePath)
-        if (!folder.exists()) {
-            folder.mkdirs()
-        }
-        downloadService = context?.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val request: DownloadManager.Request = DownloadManager.Request(url.toUri())
-        request.setTitle(imageName)
-            .setDescription("Image is downloading...")
-            .setDestinationInExternalPublicDir(
-                Environment.DIRECTORY_DOWNLOADS,
-                "/KTask3/$imageName"
-            )
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-            .setAllowedOverMetered(true)
-        downloadId = downloadService.enqueue(request)
-    }
-
-    private fun updateName(id: String, item: Item) {
-
-        val name: String = selectedItemTitle.text.toString()
-        if (viewModel.hasInternetConnection()) {
-            if (selectedItemTitle.text.isEmpty()) {
-                Toast.makeText(this.context, "please Enter New Name", Toast.LENGTH_SHORT).show()
-            } else {
-                item.itemName = name
-                viewModel.viewModelScope.launch {
-                    viewModel.updateNameInApi(id, item)
-                }
-            }
-        } else {
-            if (selectedItemTitle.text.isEmpty()) {
-                Toast.makeText(this.context, "please Enter New Name", Toast.LENGTH_SHORT).show()
-            } else {
-                item.itemName = name
-                viewModel.viewModelScope.launch {
-                    viewModel.updateNameInDatabase(id, name)
+            viewModel.data.observe(this.viewLifecycleOwner) {
+                if (it == null) {
+                    Log.d("No data In Database", it.toString())
+                } else {
+                    binding.selectedItemRecyclerView.layoutManager = linearLayoutManager
+                    binding.selectedItemRecyclerView.adapter =
+                        SelectedItemAdapter(it, this@SelectedItemFragment)
+                    binding.selectedItemRecyclerView.scrollToPosition(itemPosition)
                 }
             }
         }
-        showNotification(name)
     }
 
     private fun createNotificationChannel() {
@@ -171,7 +123,7 @@ class SelectedItemFragment : Fragment(R.layout.fragment_selected_item) {
                     description = descriptionText
                 }
             val notificationManager: NotificationManager =
-                requireActivity().getSystemService(NotificationManager::class.java) as NotificationManager
+                activity?.getSystemService(NotificationManager::class.java) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -186,7 +138,53 @@ class SelectedItemFragment : Fragment(R.layout.fragment_selected_item) {
             notify(notificationId, builder.build())
         }
     }
+
+    override fun downloadImage(url: String, imageName: String) {
+        val filePath: String =
+            Environment.getExternalStorageDirectory().absolutePath + File.separator + "KTask3"
+        val folder = File(filePath)
+        if (!folder.exists()) {
+            folder.mkdirs()
+        }
+        downloadService =
+            requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val request: DownloadManager.Request = DownloadManager.Request(url.toUri())
+        request.setTitle(imageName)
+            .setDescription("Image is downloading...")
+            .setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS,
+                "/KTask3/$imageName.jpg"
+            )
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+            .setAllowedOverMetered(true)
+        downloadId = downloadService.enqueue(request)
+    }
+
+    override fun updateName(
+        id: String,
+        item: Item,
+        oldName: String,
+        newName: String
+    ) {
+        if (viewModel.hasInternetConnection()) {
+            if (oldName == newName) {
+                Toast.makeText(context, "please Enter New Name", Toast.LENGTH_SHORT).show()
+            } else {
+                item.itemName = newName
+                viewModel.viewModelScope.launch {
+                    viewModel.updateNameInApi(id, item)
+                    showNotification(newName)
+                }
+            }
+        } else {
+            Toast.makeText(context, "please Check Your Internet Connection", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+
 }
+
 
 
 

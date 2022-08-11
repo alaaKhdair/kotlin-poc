@@ -7,12 +7,18 @@
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/drawable/ic_connection_error.xml" value="0.207" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/drawable/loading_img.xml" value="0.172" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout-land/fragment_selected_item.xml" value="0.2" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout-land/recycler_selected_item.xml" value="0.2" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/activity_main.xml" value="0.16842105263157894" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/fragment_item__list.xml" value="0.36685773840541946" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/fragment_item_list.xml" value="0.15648148148148147" />
-        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/fragment_selected_item.xml" value="0.4" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/fragment_selected_item.xml" value="0.2" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/item_seconde_secreen.xml" value="0.365625" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/recycler_selected_item.xml" value="0.365625" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/recycler_view_selected_item.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/recyclerview_item.xml" value="0.4" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/recyclerview_selected_item.xml" value="0.365625" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/selected_item.xml" value="0.365625" />
+        <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/selected_recycler_view_item.xml" value="0.365625" />
         <entry key="..\:/Users/alaa/StudioProjects/kotlinTask3/app/src/main/res/layout/selecteditem.xml" value="0.23333333333333334" />
       </map>
     </option>

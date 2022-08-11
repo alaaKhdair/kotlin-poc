@@ -31,16 +31,14 @@ class ItemViewModel(
     private val _item = MutableLiveData<Item>()
     val item: LiveData<Item> = _item
 
-
     private val _nameUpdated = MutableLiveData<Boolean>()
     val nameUpdated: LiveData<Boolean> = _nameUpdated
 
+    var position: Int = 0
+
+
     init {
         getItems()
-    }
-
-    fun getItemLiveDataObserver(): MutableLiveData<Item> {
-        return _item
     }
 
     private fun getItems() {
@@ -66,6 +64,7 @@ class ItemViewModel(
             override fun onResponse(call: Call<Item>, response: Response<Item>) {
                 _item.postValue(response.body())
             }
+
             override fun onFailure(call: Call<Item>, t: Throwable) {
                 viewModelScope.launch { getSelectedItem(id) }
             }
@@ -107,10 +106,6 @@ class ItemViewModel(
         return false
     }
 
-    fun getItemWhenNoConnection(id: String) = viewModelScope.launch {
-        _item.postValue(itemRepository.getItemFromDb(id))
-    }
-
     fun updateNameInDatabase(id: String, name: String) = viewModelScope.launch {
         itemRepository.updateName(id, name)
     }
@@ -130,6 +125,7 @@ class ItemViewModel(
             }
         })
     }
+
 }
 
 

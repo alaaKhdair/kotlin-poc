@@ -12,9 +12,6 @@ interface ItemDao {
     @Query("SELECT * from ApiData ORDER BY name ASC")
     suspend fun getItems(): List<Item>
 
-    @Query("SELECT * from ApiData where id = :id")
-    suspend fun getSelectedItem(id: String): Item
-
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(@NonNull items: Item): Long
 

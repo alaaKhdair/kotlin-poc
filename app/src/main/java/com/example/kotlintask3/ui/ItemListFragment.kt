@@ -28,7 +28,6 @@ class ItemListFragment : Fragment(R.layout.fragment_item_list) {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.d("ListItemFragment", "onCreateView")
         if (!this::binding.isInitialized) {
             binding = FragmentItemListBinding.inflate(layoutInflater)
             viewModel = (activity as MainActivity).viewModel
@@ -56,7 +55,7 @@ class ItemListFragment : Fragment(R.layout.fragment_item_list) {
                 binding.itemsRecyclerView.layoutManager = linearLayoutManager
                 binding.itemsRecyclerView.adapter = ItemAdapter(it)
                 viewModel.insertData(it)
-                progressBar.visibility=View.GONE
+                progressBar.visibility = View.GONE
             }
         } else {
             viewModel.viewModelScope.launch {
@@ -76,10 +75,12 @@ class ItemListFragment : Fragment(R.layout.fragment_item_list) {
     override fun onResume() {
         super.onResume()
         (activity as AppCompatActivity).supportActionBar?.title = "items"
-        if (viewModel.nameUpdated.value==true)
+        if (viewModel.nameUpdated.value == true)
             postData()
+        binding.itemsRecyclerView.scrollToPosition(viewModel.position)
     }
 }
+
 class ItemListOnBackPressedCallback(
     private val slidingPaneLayout: SlidingPaneLayout
 ) : OnBackPressedCallback(slidingPaneLayout.isSlideable && slidingPaneLayout.isOpen),

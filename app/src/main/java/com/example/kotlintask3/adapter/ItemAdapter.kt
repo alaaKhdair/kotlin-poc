@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.recyclerview_item.view.*
 
 class ItemAdapter(private val data: List<Item>) :
     RecyclerView.Adapter<ItemAdapter.AdapterViewHolder>() {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdapterViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val listItemBinding = RecyclerviewItemBinding.inflate(inflater, parent, false)
@@ -28,7 +29,7 @@ class ItemAdapter(private val data: List<Item>) :
             Glide.with(this).load(item.itemIconSrc).into(itemImage)
             setOnClickListener {
                 val bundle = Bundle()
-                bundle.putString("id", item.id)
+                bundle.putInt("itemPosition", holder.adapterPosition)
                 it.findNavController().navigate(
                     R.id.action_item_List_to_selected_item,
                     bundle

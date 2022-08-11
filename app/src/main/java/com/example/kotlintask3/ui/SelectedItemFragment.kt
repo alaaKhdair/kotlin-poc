@@ -181,8 +181,6 @@ class SelectedItemFragment : Fragment(R.layout.fragment_selected_item), UiFuncti
                 .show()
         }
     }
-
-
 }
 
 
